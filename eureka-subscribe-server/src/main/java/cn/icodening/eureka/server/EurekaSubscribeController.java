@@ -31,6 +31,9 @@ public class EurekaSubscribeController {
                                                         @RequestHeader(name = "read-timeout", defaultValue = "30") long readTimeout,
                                                         @RequestHeader(name = "app-hash", required = false) String appHash
     ) {
+        if (readTimeout <= 1) {
+            readTimeout = 30;
+        }
         long timeout = TimeUnit.MILLISECONDS.convert(readTimeout - 1, TimeUnit.SECONDS);
         String upperAppName = appName.toUpperCase();
         String lastHash = ApplicationHashHistory.getLastHash(upperAppName);
