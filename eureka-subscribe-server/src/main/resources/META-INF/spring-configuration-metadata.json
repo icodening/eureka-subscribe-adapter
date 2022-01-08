@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "eureka.server.subscribe.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Flag to enable the Eureka subscribe support. Default true.",
+      "defaultValue": true
+    }
+  ]
+}
