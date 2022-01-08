@@ -45,5 +45,5 @@ eureka:
 ````
 * 4.启动Eureka Server
 
-### 二.添加启动参数
+### 二.添加启动参数方式
 TODO
