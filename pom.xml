@@ -6,13 +6,16 @@
 
     <groupId>cn.icodening.eureka</groupId>
     <artifactId>eureka-subscribe-parent</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <modules>
         <module>eureka-subscribe-common</module>
+        <module>eureka-subscribe-server</module>
     </modules>
 
     <properties>
+        <java.version>1.8</java.version>
         <springboot.version>2.3.12.RELEASE</springboot.version>
         <spring-cloud.version>Hoxton.SR10</spring-cloud.version>
     </properties>
@@ -35,4 +38,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
