@@ -23,6 +23,7 @@ Header 参数:
 > Spring Cloud >= Greenwich
 
 # 使用方法
+### Eureka Server 端
 ### 一.添加依赖方式
 * 1.先安装代码到本地仓库
 ````shell script
@@ -46,4 +47,8 @@ eureka:
 * 4.启动Eureka Server
 
 ### 二.添加启动参数方式
+TODO
+---
+### Client 端
+### Netflix Ribbon
 TODO
