@@ -12,6 +12,8 @@ import java.util.Optional;
  */
 public interface ApplicationHashGenerator {
 
+    ApplicationHashGenerator DEFAULT = new DefaultApplicationHashGenerator();
+
     /**
      * 根据实例信息生成hash码
      *
