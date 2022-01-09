@@ -1,11 +1,15 @@
 package cn.icodening.eureka.client;
 
+import cn.icodening.eureka.common.ApplicationHashHistory;
+import cn.icodening.eureka.common.Constants;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
 import com.netflix.discovery.shared.transport.jersey.JerseyApplicationClient;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.netflix.discovery.shared.transport.EurekaHttpResponse.anEurekaHttpResponse;
 
@@ -30,11 +35,21 @@ public class JerseyApplicationSubscribeClient extends JerseyApplicationClient im
     private static final Logger logger = LoggerFactory.getLogger(JerseyApplicationSubscribeClient.class);
 
     public JerseyApplicationSubscribeClient(Client jerseyClient, String serviceUrl) {
-        this(jerseyClient, serviceUrl, null);
+        this(jerseyClient, serviceUrl, null, null);
     }
 
     public JerseyApplicationSubscribeClient(Client jerseyClient, String serviceUrl, Map<String, String> additionalHeaders) {
+        this(jerseyClient, serviceUrl, additionalHeaders, null);
+    }
+
+    public JerseyApplicationSubscribeClient(Client jerseyClient, String serviceUrl, EurekaClientConfig eurekaClientConfig) {
+        this(jerseyClient, serviceUrl, null, eurekaClientConfig);
+    }
+
+    public JerseyApplicationSubscribeClient(Client jerseyClient, String serviceUrl, Map<String, String> additionalHeaders, EurekaClientConfig eurekaClientConfig) {
         super(jerseyClient, serviceUrl, additionalHeaders);
+        jerseyClient.setReadTimeout((int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerReadTimeoutSeconds(), TimeUnit.SECONDS));
+        jerseyClient.setConnectTimeout((int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerConnectTimeoutSeconds(), TimeUnit.SECONDS));
     }
 
     @Override
@@ -43,7 +58,7 @@ public class JerseyApplicationSubscribeClient extends JerseyApplicationClient im
         ClientResponse response = null;
         try {
             WebResource.Builder requestBuilder = jerseyClient.resource(serviceUrl).path(urlPath).getRequestBuilder();
-            addExtraHeaders(requestBuilder);
+            addExtraHeadersByAppName(appName, requestBuilder);
             response = requestBuilder.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 
             Application application = null;
@@ -62,6 +77,13 @@ public class JerseyApplicationSubscribeClient extends JerseyApplicationClient im
                 response.close();
             }
         }
+    }
+
+    protected void addExtraHeadersByAppName(String appName, WebResource.Builder webResource) {
+        super.addExtraHeaders(webResource);
+        Integer readTimeoutMilliseconds = (Integer) jerseyClient.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT);
+        webResource.header(Constants.HEADER_READ_TIMEOUT, readTimeoutMilliseconds);
+        webResource.header(Constants.HEADER_APP_HASH, ApplicationHashHistory.getLastHash(appName.toUpperCase()));
     }
 
     private static Map<String, String> headersOf(ClientResponse response) {
