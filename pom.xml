@@ -12,6 +12,7 @@
     <modules>
         <module>eureka-subscribe-common</module>
         <module>eureka-subscribe-server</module>
+        <module>eureka-subscribe-client</module>
     </modules>
 
     <properties>
