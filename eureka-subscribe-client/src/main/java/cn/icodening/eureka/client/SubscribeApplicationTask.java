@@ -2,11 +2,8 @@ package cn.icodening.eureka.client;
 
 import cn.icodening.eureka.common.ApplicationHashGenerator;
 import cn.icodening.eureka.common.ApplicationHashHistory;
-import com.netflix.discovery.provider.DiscoveryJerseyProvider;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
 
 import java.util.TimerTask;
 
