@@ -62,6 +62,7 @@ public class EurekaEventListenerConfiguration {
 
     private void complete(String appName, List<InstanceInfo> instances) {
         //更新hash
+        Application app = new Application(appName, instances);
         String upperAppName = appName.toUpperCase();
         Application application = instanceRegistry.getApplication(upperAppName);
         String currentHash = Optional.ofNullable(application)
@@ -69,16 +70,16 @@ public class EurekaEventListenerConfiguration {
                 .orElse(Constants.NONE_HASH);
         ApplicationHashHistory.updateHash(upperAppName, currentHash);
 
-        List<DeferredResult<List<InstanceInfo>>> deferredResults = eurekaDeferredResultStore.getDeferredResults(appName);
+        List<DeferredResult<Application>> deferredResults = eurekaDeferredResultStore.getDeferredResults(appName);
         if (deferredResults == null || deferredResults.isEmpty()) {
             return;
         }
-        Iterator<DeferredResult<List<InstanceInfo>>> it = deferredResults.iterator();
+        Iterator<DeferredResult<Application>> it = deferredResults.iterator();
         while (it.hasNext()) {
-            DeferredResult<List<InstanceInfo>> dr = it.next();
+            DeferredResult<Application> dr = it.next();
             synchronized (dr) {
                 if (!dr.hasResult()) {
-                    dr.setResult(instances);
+                    dr.setResult(app);
                 }
             }
             it.remove();

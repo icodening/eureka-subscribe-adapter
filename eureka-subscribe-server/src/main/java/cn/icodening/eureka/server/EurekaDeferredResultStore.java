@@ -1,6 +1,6 @@
 package cn.icodening.eureka.server;
 
-import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -15,15 +15,15 @@ import java.util.Map;
  */
 class EurekaDeferredResultStore {
 
-    private final Map<String, List<DeferredResult<List<InstanceInfo>>>> deferredResults = new LinkedCaseInsensitiveMap<>();
+    private final Map<String, List<DeferredResult<Application>>> deferredResults = new LinkedCaseInsensitiveMap<>();
 
-    public void pushDeferredResult(String appName, DeferredResult<List<InstanceInfo>> deferredResult) {
-        List<DeferredResult<List<InstanceInfo>>> defs = deferredResults.get(appName);
+    public void pushDeferredResult(String appName, DeferredResult<Application> deferredResult) {
+        List<DeferredResult<Application>> defs = deferredResults.get(appName);
         if (defs == null) {
             synchronized (deferredResults) {
                 defs = deferredResults.get(appName);
                 if (defs == null) {
-                    List<DeferredResult<List<InstanceInfo>>> contexts = new LinkedList<>();
+                    List<DeferredResult<Application>> contexts = new LinkedList<>();
                     deferredResults.put(appName, contexts);
                     contexts.add(deferredResult);
                     return;
@@ -35,8 +35,8 @@ class EurekaDeferredResultStore {
         }
     }
 
-    public List<DeferredResult<List<InstanceInfo>>> getDeferredResults(String appName) {
-        List<DeferredResult<List<InstanceInfo>>> defs = deferredResults.get(appName);
+    public List<DeferredResult<Application>> getDeferredResults(String appName) {
+        List<DeferredResult<Application>> defs = deferredResults.get(appName);
         if (defs != null) {
             synchronized (deferredResults) {
                 defs = deferredResults.get(appName);
