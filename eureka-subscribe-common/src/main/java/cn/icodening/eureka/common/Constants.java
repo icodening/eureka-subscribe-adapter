@@ -7,4 +7,8 @@ package cn.icodening.eureka.common;
 public class Constants {
 
     public static final String NONE_HASH = "NONE";
+
+    public static final String HEADER_APP_HASH = "app-hash";
+
+    public static final String HEADER_READ_TIMEOUT = "read-timeout";
 }
