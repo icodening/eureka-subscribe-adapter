@@ -1,7 +1,6 @@
 package cn.icodening.eureka.server;
 
 import cn.icodening.eureka.common.ApplicationHashHistory;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.registry.InstanceRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,10 @@ import org.springframework.cloud.netflix.eureka.EurekaConstants;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,8 +30,8 @@ public class EurekaSubscribeController {
     @GetMapping("/{appName}")
     @ResponseBody
     public DeferredResult<Application> subscribe(@PathVariable(name = "appName") String appName,
-                                                        @RequestHeader(name = "read-timeout", defaultValue = "30") long readTimeout,
-                                                        @RequestHeader(name = "app-hash", required = false) String appHash
+                                                 @RequestHeader(name = "read-timeout", defaultValue = "30") long readTimeout,
+                                                 @RequestHeader(name = "app-hash", required = false) String appHash
     ) {
         if (readTimeout <= 1) {
             readTimeout = 30;
