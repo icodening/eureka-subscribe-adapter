@@ -48,6 +48,7 @@ public class ModifiableServerList implements ApplicationAware, ServerList<Discov
 
     @Override
     public List<DiscoveryEnabledServer> getUpdatedListOfServers() {
+        //FIXME 首次调用时一定无实例
         return servers;
     }
 }
