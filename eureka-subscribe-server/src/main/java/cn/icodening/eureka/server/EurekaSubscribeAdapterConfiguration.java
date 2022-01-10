@@ -22,6 +22,9 @@ import org.springframework.cloud.netflix.eureka.server.EurekaServerConfigBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 /**
  * @author icodening
  * @date 2022.01.08
@@ -31,6 +34,15 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnBean({EurekaServerConfig.class, InstanceRegistry.class})
 @ConditionalOnProperty(prefix = EurekaServerConfigBean.PREFIX, name = "subscribe.enabled", havingValue = "true", matchIfMissing = true)
 public class EurekaSubscribeAdapterConfiguration {
+
+    @Bean
+    public ScheduledExecutorService timeoutTaskExecutor() {
+        return new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors() + 1, r -> {
+            Thread thread = new Thread(r);
+            thread.setName("timeout-check-thread");
+            return thread;
+        });
+    }
 
     @Bean
     public EurekaDeferredResultStore eurekaDeferredResultStore() {

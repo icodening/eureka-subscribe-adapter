@@ -38,10 +38,7 @@ class EurekaDeferredResultStore {
     public List<DeferredResult<Application>> getDeferredResults(String appName) {
         List<DeferredResult<Application>> defs = deferredResults.get(appName);
         if (defs != null) {
-            synchronized (deferredResults) {
-                defs = deferredResults.get(appName);
-                return defs;
-            }
+            return defs;
         }
         return Collections.emptyList();
     }

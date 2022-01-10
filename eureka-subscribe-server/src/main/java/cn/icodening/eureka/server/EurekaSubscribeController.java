@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +23,10 @@ import java.util.concurrent.TimeUnit;
  */
 @RequestMapping(EurekaConstants.DEFAULT_PREFIX + "/subscribe")
 public class EurekaSubscribeController {
+
+    @Autowired
+    @Qualifier("timeoutTaskExecutor")
+    private ScheduledExecutorService scheduledExecutorService;
 
     @Autowired
     private EurekaDeferredResultStore eurekaDeferredResultStore;
@@ -45,7 +50,7 @@ public class EurekaSubscribeController {
         long timeout = TimeUnit.MILLISECONDS.convert(readTimeout - 1, TimeUnit.SECONDS);
         String upperAppName = appName.toUpperCase();
         String lastHash = ApplicationHashHistory.getLastHash(upperAppName);
-        DeferredResult<Application> result = buildDeferredResult(appName, timeout);
+        DeferredResult<Application> result = buildDeferredResult();
         if (appHash == null || Objects.equals(appHash, lastHash)) {
             //客户端没有传递服务列表的当前hash或传递了但与服务端上次hash一致，说明服务列表没有改变，则立即订阅
             eurekaDeferredResultStore.pushDeferredResult(appName.toUpperCase(), result);
@@ -61,6 +66,9 @@ public class EurekaSubscribeController {
                     }
                 }
             });
+            scheduledExecutorService.schedule(() -> {
+                result.setResult(instanceRegistry.getApplication(upperAppName));
+            }, timeout, TimeUnit.MILLISECONDS);
             return result;
         }
         //hash不相等则立即返回当前最新的服务列表
@@ -69,10 +77,8 @@ public class EurekaSubscribeController {
         return result;
     }
 
-    private DeferredResult<Application> buildDeferredResult(String appName, long timeout) {
-        DeferredResult<Application> ret = new DeferredResult<>(timeout, () ->
-                Optional.ofNullable(instanceRegistry.getApplication(appName.toUpperCase()))
-                        .orElse(new Application(appName.toUpperCase())));
+    private DeferredResult<Application> buildDeferredResult() {
+        DeferredResult<Application> ret = new DeferredResult<>();
         ret.setResultHandler(applicationHistoryUpdater);
         return ret;
     }
