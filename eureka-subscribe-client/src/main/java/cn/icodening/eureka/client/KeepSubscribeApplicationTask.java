@@ -37,6 +37,7 @@ public class KeepSubscribeApplicationTask extends SubscribeApplicationTask {
 
     @Override
     protected void onComplete() {
+        //FIXME 当连接失败时却忽略了异常，会不断打印报错信息
         if (!stop) {
             executor.execute(this);
         }
