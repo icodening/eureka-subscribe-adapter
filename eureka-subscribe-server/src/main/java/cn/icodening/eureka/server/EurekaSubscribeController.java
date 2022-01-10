@@ -1,9 +1,11 @@
 package cn.icodening.eureka.server;
 
 import cn.icodening.eureka.common.ApplicationHashHistory;
+import cn.icodening.eureka.common.Constants;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.registry.InstanceRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.eureka.EurekaConstants;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -27,11 +29,15 @@ public class EurekaSubscribeController {
     @Autowired
     private InstanceRegistry instanceRegistry;
 
+    @Autowired
+    @Qualifier("applicationHistoryUpdater")
+    private DeferredResult.DeferredResultHandler applicationHistoryUpdater;
+
     @GetMapping("/{appName}")
     @ResponseBody
     public DeferredResult<Application> subscribe(@PathVariable(name = "appName") String appName,
-                                                 @RequestHeader(name = "read-timeout", defaultValue = "30") long readTimeout,
-                                                 @RequestHeader(name = "app-hash", required = false) String appHash
+                                                 @RequestHeader(name = Constants.HEADER_READ_TIMEOUT, defaultValue = "30") long readTimeout,
+                                                 @RequestHeader(name = Constants.HEADER_APP_HASH, required = false) String appHash
     ) {
         if (readTimeout <= 1) {
             readTimeout = 30;
@@ -58,14 +64,16 @@ public class EurekaSubscribeController {
             return result;
         }
         //hash不相等则立即返回当前最新的服务列表
-        Application nowApplication = instanceRegistry.getApplication(appName);
+        Application nowApplication = Optional.ofNullable(instanceRegistry.getApplication(upperAppName)).orElse(new Application(upperAppName));
         result.setResult(nowApplication);
         return result;
     }
 
     private DeferredResult<Application> buildDeferredResult(String appName, long timeout) {
-        return new DeferredResult<>(timeout, () ->
+        DeferredResult<Application> ret = new DeferredResult<>(timeout, () ->
                 Optional.ofNullable(instanceRegistry.getApplication(appName.toUpperCase()))
                         .orElse(new Application(appName.toUpperCase())));
+        ret.setResultHandler(applicationHistoryUpdater);
+        return ret;
     }
 }

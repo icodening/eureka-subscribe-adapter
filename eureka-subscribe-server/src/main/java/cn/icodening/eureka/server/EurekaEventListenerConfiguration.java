@@ -2,7 +2,6 @@ package cn.icodening.eureka.server;
 
 import cn.icodening.eureka.common.ApplicationHashGenerator;
 import cn.icodening.eureka.common.ApplicationHashHistory;
-import cn.icodening.eureka.common.Constants;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.registry.InstanceRegistry;
@@ -64,10 +63,7 @@ public class EurekaEventListenerConfiguration {
         //更新hash
         Application app = new Application(appName, instances);
         String upperAppName = appName.toUpperCase();
-        Application application = instanceRegistry.getApplication(upperAppName);
-        String currentHash = Optional.ofNullable(application)
-                .map(applicationHashGenerator::generate)
-                .orElse(Constants.NONE_HASH);
+        String currentHash = applicationHashGenerator.generate(app);
         ApplicationHashHistory.updateHash(upperAppName, currentHash);
 
         List<DeferredResult<Application>> deferredResults = eurekaDeferredResultStore.getDeferredResults(appName);
