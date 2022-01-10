@@ -48,8 +48,14 @@ public class JerseyApplicationSubscribeClient extends JerseyApplicationClient im
 
     public JerseyApplicationSubscribeClient(Client jerseyClient, String serviceUrl, Map<String, String> additionalHeaders, EurekaClientConfig eurekaClientConfig) {
         super(jerseyClient, serviceUrl, additionalHeaders);
-        jerseyClient.setReadTimeout((int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerReadTimeoutSeconds(), TimeUnit.SECONDS));
-        jerseyClient.setConnectTimeout((int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerConnectTimeoutSeconds(), TimeUnit.SECONDS));
+        int readTimeout = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
+        int connectTimeout = (int) TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS);
+        if (eurekaClientConfig != null) {
+            readTimeout = (int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerReadTimeoutSeconds(), TimeUnit.SECONDS);
+            connectTimeout = (int) TimeUnit.MILLISECONDS.convert(eurekaClientConfig.getEurekaServerConnectTimeoutSeconds(), TimeUnit.SECONDS);
+        }
+        jerseyClient.setReadTimeout(readTimeout);
+        jerseyClient.setConnectTimeout(connectTimeout);
     }
 
     @Override
