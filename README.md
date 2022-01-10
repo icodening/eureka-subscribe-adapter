@@ -19,7 +19,7 @@ Header 参数:
 
 
 # 版本要求
-> JDK >= 1.8
+> JDK >= 1.8  
 > Spring Boot >= 2.1.X  
 > Spring Cloud >= Greenwich
 

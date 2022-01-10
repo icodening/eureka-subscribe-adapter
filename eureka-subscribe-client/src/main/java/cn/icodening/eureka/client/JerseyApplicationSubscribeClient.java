@@ -88,7 +88,7 @@ public class JerseyApplicationSubscribeClient extends JerseyApplicationClient im
     protected void addExtraHeadersByAppName(String appName, WebResource.Builder webResource) {
         super.addExtraHeaders(webResource);
         Integer readTimeoutMilliseconds = (Integer) jerseyClient.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT);
-        webResource.header(Constants.HEADER_READ_TIMEOUT, readTimeoutMilliseconds);
+        webResource.header(Constants.HEADER_READ_TIMEOUT, TimeUnit.SECONDS.convert(readTimeoutMilliseconds, TimeUnit.MILLISECONDS));
         webResource.header(Constants.HEADER_APP_HASH, ApplicationHashHistory.getLastHash(appName.toUpperCase()));
     }
 
