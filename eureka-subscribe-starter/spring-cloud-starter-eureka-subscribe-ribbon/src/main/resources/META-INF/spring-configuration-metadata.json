@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "ribbon.eureka.subscribe.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Flag to enable the ribbon subscription eureka support. Default true.",
+      "defaultValue": true
+    }
+  ]
+}
