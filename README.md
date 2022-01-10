@@ -9,7 +9,7 @@ Eureka 订阅模式扩展模块，可感知服务列表的变化。
 
 # 暴露接口
 ````http request
-/eureka/subscribe/{appName}
+GET /eureka/subscribe/{appName}
 ````
 Header 参数:
 > read-timeout: 默认值30，单位为秒。该值必须大于1。说明：后端处理时会用该值减去1作为等待超时时间，防止踩点响应导致客户端出现读超时异常。
@@ -19,6 +19,7 @@ Header 参数:
 
 
 # 版本要求
+> JDK >= 1.8
 > Spring Boot >= 2.1.X  
 > Spring Cloud >= Greenwich
 

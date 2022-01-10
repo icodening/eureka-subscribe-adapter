@@ -4,6 +4,8 @@ import cn.icodening.eureka.common.ApplicationHashGenerator;
 import cn.icodening.eureka.common.ApplicationHashHistory;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.transport.EurekaHttpResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.TimerTask;
 
@@ -12,6 +14,8 @@ import java.util.TimerTask;
  * @date 2022.01.09
  */
 public abstract class SubscribeApplicationTask extends TimerTask {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeApplicationTask.class);
 
     private final String appName;
 
@@ -60,7 +64,9 @@ public abstract class SubscribeApplicationTask extends TimerTask {
     }
 
     protected void onException(Exception exception) {
-
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("subscribe servers error!!!", exception);
+        }
     }
 
     protected void onSuccess(Application application) {
