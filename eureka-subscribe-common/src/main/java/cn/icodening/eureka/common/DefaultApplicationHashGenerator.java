@@ -19,7 +19,7 @@ public class DefaultApplicationHashGenerator implements ApplicationHashGenerator
         for (InstanceInfo instanceInfo : instanceInfos) {
             long idHash = instanceInfo.getId().hashCode();
             long metadataHash = instanceInfo.getMetadata().hashCode();
-            long statusHash = instanceInfo.getStatus().hashCode();
+            long statusHash = instanceInfo.getStatus().toString().hashCode();
             sumHash = sumHash + idHash + metadataHash + statusHash;
         }
         return String.valueOf(sumHash);
