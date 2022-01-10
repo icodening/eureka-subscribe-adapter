@@ -49,8 +49,8 @@ public class EurekaSubscribeAdapterConfiguration {
          * A: 由于Eureka依赖的jersey版本太低并不支持异步servlet(虽然对应Servlet已经支持但jersey不支持)，所以需要使用外部的Servlet容器来实现异步处理(一般我们使用的SpringBoot版本都不会太低,这些版本是支持Servlet异步的)，便需要jersey放行我们的请求
          *
          * **********由于Eureka依赖的jersey版本太低并不支持异步servlet，所以使用外部的Servlet容器来实现异步处理，便需要jersey放行我们的请求************
-         * 由于Eureka Server使用Filter的方式在SpringBoot内嵌Servlet容器中再嵌套了一个jersey servlet容器
-         * /eureka/* 的前缀会被 com.sun.jersey.spi.container.servlet.ServletContainer 作为拦截，并且jersey容器中没有subscribe的接口，最终会出现404
+         * Eureka Server使用Filter的方式在SpringBoot内嵌Servlet容器中再嵌套了一个jersey servlet容器
+         * /eureka/* 的前缀会被 com.sun.jersey.spi.container.servlet.ServletContainer 拦截，并且jersey容器中没有subscribe的接口，最终会出现404
          * 为了共用/eureka/*这个前缀， 这里将其改为FEATURE_FILTER_FORWARD_ON_404属性改为true，可使得请求向后传递到EurekaSubscribeController中
          * */
         return new AfterInitializationBeanProcessor<>(ResourceConfig.class, "jerseyApplication")
