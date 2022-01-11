@@ -6,6 +6,8 @@ import cn.icodening.eureka.client.RetryableEurekaSubscribeHttpClient;
 import cn.icodening.eureka.common.ApplicationAware;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.client.config.IClientConfig;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.resolver.ClusterResolver;
 import com.netflix.discovery.shared.resolver.DefaultEndpoint;
@@ -15,6 +17,7 @@ import com.netflix.loadbalancer.ServerListUpdater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
@@ -40,6 +43,9 @@ public class ServerListAwareConfiguration {
     @Autowired
     private ApplicationInfoManager applicationInfoManager;
 
+    @Autowired
+    private PropertiesFactory propertiesFactory;
+
     @Bean
     public ScheduledExecutorService subscribeApplicationExecutor() {
         return new ScheduledThreadPoolExecutor(1, r -> {
@@ -50,8 +56,15 @@ public class ServerListAwareConfiguration {
     }
 
     @Bean
-    public ServerList<?> ribbonServerList() {
-        return new ModifiableServerList();
+    public ServerList<?> ribbonServerList(EurekaClient eurekaClient, IClientConfig clientConfig) {
+        //兼容Ribbon官方配置, 支持针对不同服务名强制指定ServerList，可以针对性的不使用订阅模式，提高灵活性
+        // service-id.ribbon.NIWSServerListClassName=classname
+        if (this.propertiesFactory.isSet(ServerList.class, appName)) {
+            return this.propertiesFactory.get(ServerList.class, clientConfig, appName);
+        }
+        ModifiableServerList modifiableServerList = new ModifiableServerList(eurekaClient);
+        modifiableServerList.initWithNiwsConfig(clientConfig);
+        return modifiableServerList;
     }
 
     @Bean

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,7 +29,7 @@ public class ServerListAwareUpdater implements ServerListUpdater {
 
     private final String applicationName;
     private final EurekaSubscribableHttpClient eurekaSubscribableHttpClient;
-    private final Executor executor;
+    private final ScheduledExecutorService executor;
     private final List<ApplicationAware> applicationAwareList;
 
     private volatile KeepSubscribeApplicationTask keepSubscribeApplicationTask;
@@ -38,7 +38,7 @@ public class ServerListAwareUpdater implements ServerListUpdater {
 
     public ServerListAwareUpdater(String applicationName,
                                   EurekaSubscribableHttpClient eurekaSubscribableHttpClient,
-                                  Executor executor,
+                                  ScheduledExecutorService executor,
                                   List<ApplicationAware> applicationAwareList) {
         this.applicationName = applicationName;
         this.eurekaSubscribableHttpClient = eurekaSubscribableHttpClient;
