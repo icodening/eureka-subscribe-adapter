@@ -4,6 +4,7 @@ import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
 import cn.icodening.eureka.client.EurekaSubscribeTransportClientFactory;
 import cn.icodening.eureka.client.RetryableEurekaSubscribeHttpClient;
 import cn.icodening.eureka.common.ApplicationAware;
+import cn.icodening.eureka.common.ApplicationHashGenerator;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
@@ -71,8 +72,13 @@ public class ServerListAwareConfiguration {
     @DependsOn("ribbonServerList")
     public ServerListUpdater serverListAwareUpdater(@Qualifier("eurekaSubscribableHttpClient") EurekaSubscribableHttpClient eurekaSubscribableHttpClient,
                                                     @Qualifier("subscribeApplicationExecutor") ScheduledExecutorService subscribeApplicationExecutor,
-                                                    @Autowired(required = false) List<ApplicationAware> applicationAwareList) {
-        return new ServerListAwareUpdater(appName, eurekaSubscribableHttpClient, subscribeApplicationExecutor, applicationAwareList);
+                                                    @Autowired(required = false) List<ApplicationAware> applicationAwareList,
+                                                    ApplicationHashGenerator defaultApplicationHashGenerator) {
+        ServerListAwareUpdater serverListAwareUpdater = new ServerListAwareUpdater(appName, eurekaSubscribableHttpClient, subscribeApplicationExecutor);
+        serverListAwareUpdater.setApplicationAwareList(applicationAwareList);
+        serverListAwareUpdater.setApplicationHashGenerator(defaultApplicationHashGenerator);
+        serverListAwareUpdater.setEurekaClientConfig(eurekaClientConfig);
+        return serverListAwareUpdater;
     }
 
     @Bean

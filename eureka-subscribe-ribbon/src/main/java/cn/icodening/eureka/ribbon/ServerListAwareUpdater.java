@@ -3,6 +3,8 @@ package cn.icodening.eureka.ribbon;
 import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
 import cn.icodening.eureka.client.KeepSubscribeApplicationTask;
 import cn.icodening.eureka.common.ApplicationAware;
+import cn.icodening.eureka.common.ApplicationHashGenerator;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.ServerListUpdater;
 import org.slf4j.Logger;
@@ -11,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -30,7 +34,10 @@ public class ServerListAwareUpdater implements ServerListUpdater {
     private final String applicationName;
     private final EurekaSubscribableHttpClient eurekaSubscribableHttpClient;
     private final ScheduledExecutorService executor;
-    private final List<ApplicationAware> applicationAwareList;
+
+    private EurekaClientConfig eurekaClientConfig;
+    private ApplicationHashGenerator applicationHashGenerator;
+    private List<ApplicationAware> applicationAwareList;
 
     private volatile KeepSubscribeApplicationTask keepSubscribeApplicationTask;
 
@@ -38,18 +45,29 @@ public class ServerListAwareUpdater implements ServerListUpdater {
 
     public ServerListAwareUpdater(String applicationName,
                                   EurekaSubscribableHttpClient eurekaSubscribableHttpClient,
-                                  ScheduledExecutorService executor,
-                                  List<ApplicationAware> applicationAwareList) {
+                                  ScheduledExecutorService executor) {
         this.applicationName = applicationName;
         this.eurekaSubscribableHttpClient = eurekaSubscribableHttpClient;
         this.executor = executor;
+    }
+
+    public void setApplicationAwareList(List<ApplicationAware> applicationAwareList) {
         this.applicationAwareList = applicationAwareList == null ? Collections.emptyList() : applicationAwareList;
+    }
+
+    public void setApplicationHashGenerator(ApplicationHashGenerator applicationHashGenerator) {
+        this.applicationHashGenerator = applicationHashGenerator == null ? ApplicationHashGenerator.DEFAULT : applicationHashGenerator;
+    }
+
+    public void setEurekaClientConfig(EurekaClientConfig eurekaClientConfig) {
+        this.eurekaClientConfig = eurekaClientConfig;
     }
 
     @Override
     public synchronized void start(UpdateAction updateAction) {
         if (isActive.compareAndSet(false, true)) {
-            this.keepSubscribeApplicationTask = new KeepSubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient) {
+            long fetchIntervalMillis = Optional.ofNullable(eurekaClientConfig).map(EurekaClientConfig::getRegistryFetchIntervalSeconds).map(x -> TimeUnit.MILLISECONDS.convert(x, TimeUnit.SECONDS)).orElse(30 * 1000L);
+            this.keepSubscribeApplicationTask = new KeepSubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient, applicationHashGenerator, executor) {
                 @Override
                 protected void onApplicationChange(Application application) {
                     for (ApplicationAware applicationAware : applicationAwareList) {
@@ -59,6 +77,16 @@ public class ServerListAwareUpdater implements ServerListUpdater {
                     lastUpdated = System.currentTimeMillis();
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("{} is change, {}", applicationName, application.getInstancesAsIsFromEureka());
+                    }
+                }
+
+                @Override
+                protected void onException(Exception exception) {
+                    super.onException(exception);
+                    try {
+                        Thread.sleep(fetchIntervalMillis);
+                    } catch (InterruptedException e) {
+                        //ignore
                     }
                 }
             };
