@@ -1,10 +1,13 @@
 package cn.icodening.eureka.client;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.netflix.discovery.shared.resolver.EurekaEndpoint;
 import com.netflix.discovery.shared.transport.EurekaHttpClient;
 import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,8 +40,10 @@ public class EurekaSubscribeRestTemplateTransportClientFactory extends RestTempl
         } catch (URISyntaxException ignore) {
 
         }
-
-        restTemplate.getMessageConverters().add(0, mappingJacksonHttpMessageConverter());
+        MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = mappingJacksonHttpMessageConverter();
+        mappingJackson2HttpMessageConverter.getObjectMapper().configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        mappingJackson2HttpMessageConverter.getObjectMapper().configure(DeserializationFeature.UNWRAP_ROOT_VALUE, false);
+        restTemplate.getMessageConverters().add(0, mappingJackson2HttpMessageConverter);
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
             protected boolean hasError(HttpStatus statusCode) {
