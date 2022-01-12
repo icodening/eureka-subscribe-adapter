@@ -1,5 +1,6 @@
 # Eureka Subscribe Adapter
-Eureka 订阅模式扩展模块，可感知服务列表的变化。
+Eureka 订阅模式扩展模块，可实时感知Eureka注册中心里服务列表的变化。Eureka Server与Eureka Client的扩展。
+其中Eureka Client一侧支持Netflix Ribbon、Spring Cloud Loadbalancer的服务列表实时感知。
 
 # 实现原理
 利用Servlet 3的异步机制，对订阅请求进行挂起并不立即写回响应。同时Eureka服务中注册一个监听器，
@@ -26,7 +27,7 @@ Header 参数:
 # 使用方法
 ### Eureka Server 端
 ### 一.添加依赖方式
-* 1.先安装代码到本地仓库
+* 1.先安装代码到本地仓库(已安装则跳过)
 ````shell script
 mvn clean install
 ````
@@ -52,4 +53,23 @@ TODO
 ---
 ### Client 端
 ### Netflix Ribbon
-TODO
+* 1.先安装代码到本地仓库(已安装则跳过)
+````shell script
+mvn clean install
+````
+* 2.在应用的POM中引入以下依赖
+````shell script
+<dependency>
+    <groupId>cn.icodening.eureka</groupId>
+    <artifactId>spring-cloud-starter-eureka-subscribe-ribbon</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+````
+* 3.在bootstrap.yml中加入eureka.server.subscribe.enabled=true的配置项
+```` yaml
+ribbon:
+  eureka:
+    subscribe:
+      enabled: true #不配置时默认为值为true。当不想使用实时感知功能时可以配置为false
+````
+* 4.正常启动应用即可
