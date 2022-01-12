@@ -36,10 +36,12 @@ public class RetryableEurekaSubscribeHttpClient extends RetryableEurekaHttpClien
         }
     };
 
+    @Deprecated
     public RetryableEurekaSubscribeHttpClient(String name, ClusterResolver clusterResolver) {
         this(name, clusterResolver, subscribeClientFactory);
     }
 
+    @Deprecated
     public RetryableEurekaSubscribeHttpClient(String name, ClusterResolver clusterResolver, TransportClientFactory clientFactory) {
         this(name, new DefaultEurekaTransportConfig(name, DynamicPropertyFactory.getInstance()), clusterResolver, clientFactory);
     }

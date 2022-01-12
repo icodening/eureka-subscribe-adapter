@@ -105,7 +105,7 @@ public class ServerListAwareConfiguration {
 
     @Bean
     public EurekaSubscribableHttpClient eurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver) {
-        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", clusterResolver, new EurekaSubscribeTransportClientFactory(eurekaClientConfig));
+        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new EurekaSubscribeTransportClientFactory(eurekaClientConfig));
     }
 
 }
