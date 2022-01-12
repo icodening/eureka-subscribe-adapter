@@ -11,10 +11,13 @@ import com.netflix.discovery.shared.resolver.EurekaEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.cloud.client.ConditionalOnBlockingDiscoveryEnabled;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
+import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
@@ -43,8 +46,16 @@ public class SubscribeDefaultLoadbalancerConfiguration {
         return new ModifiableServiceInstanceListSupplier(discoveryClient, environment);
     }
 
-    @Bean
-    public EurekaSubscribableHttpClient eurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
+    @Bean("eurekaSubscribableHttpClient")
+    @ConditionalOnClass(name = "org.springframework.web.client.RestTemplate")
+    public EurekaSubscribableHttpClient restTemplateEurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
+        String appName = environment.getProperty(PROPERTY_NAME);
+        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new RestTemplateTransportClientFactory());
+    }
+
+    @Bean("eurekaSubscribableHttpClient")
+    @ConditionalOnMissingClass("org.springframework.web.client.RestTemplate")
+    public EurekaSubscribableHttpClient jerseyEurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
         String appName = environment.getProperty(PROPERTY_NAME);
         return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new EurekaSubscribeTransportClientFactory(eurekaClientConfig));
     }
