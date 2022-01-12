@@ -1,6 +1,7 @@
 package cn.icodening.eureka.loadbalancer;
 
 import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
+import cn.icodening.eureka.client.EurekaSubscribeRestTemplateTransportClientFactory;
 import cn.icodening.eureka.client.EurekaSubscribeTransportClientFactory;
 import cn.icodening.eureka.client.RetryableEurekaSubscribeHttpClient;
 import cn.icodening.eureka.common.ApplicationAware;
@@ -17,14 +18,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.cloud.client.ConditionalOnBlockingDiscoveryEnabled;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory.PROPERTY_NAME;
 
@@ -50,7 +49,7 @@ public class SubscribeDefaultLoadbalancerConfiguration {
     @ConditionalOnClass(name = "org.springframework.web.client.RestTemplate")
     public EurekaSubscribableHttpClient restTemplateEurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
         String appName = environment.getProperty(PROPERTY_NAME);
-        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new RestTemplateTransportClientFactory());
+        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new EurekaSubscribeRestTemplateTransportClientFactory());
     }
 
     @Bean("eurekaSubscribableHttpClient")
@@ -67,12 +66,7 @@ public class SubscribeDefaultLoadbalancerConfiguration {
                                                                            @Autowired(required = false) List<ApplicationAware> applicationAwareList,
                                                                            ApplicationHashGenerator defaultApplicationHashGenerator) {
         String appName = environment.getProperty(PROPERTY_NAME);
-        ScheduledThreadPoolExecutor subscribeApplicationExecutor = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r);
-            thread.setName(appName + "-subscribe-thread");
-            return thread;
-        });
-        ServiceInstanceListAwareUpdater updater = new ServiceInstanceListAwareUpdater(appName, eurekaSubscribableHttpClient, subscribeApplicationExecutor);
+        ServiceInstanceListAwareUpdater updater = new ServiceInstanceListAwareUpdater(appName, eurekaSubscribableHttpClient);
         updater.setApplicationAwareList(applicationAwareList);
         updater.setApplicationHashGenerator(defaultApplicationHashGenerator);
         updater.setEurekaClientConfig(eurekaClientConfig);

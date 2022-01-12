@@ -1,6 +1,7 @@
 package cn.icodening.eureka.ribbon;
 
 import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
+import cn.icodening.eureka.client.EurekaSubscribeRestTemplateTransportClientFactory;
 import cn.icodening.eureka.client.EurekaSubscribeTransportClientFactory;
 import cn.icodening.eureka.client.RetryableEurekaSubscribeHttpClient;
 import cn.icodening.eureka.common.ApplicationAware;
@@ -18,15 +19,20 @@ import com.netflix.loadbalancer.ServerListUpdater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
+
+import static org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory.PROPERTY_NAME;
 
 /**
  * @author icodening
@@ -103,8 +109,17 @@ public class ServerListAwareConfiguration {
         };
     }
 
-    @Bean
-    public EurekaSubscribableHttpClient eurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver) {
+    @Bean("eurekaSubscribableHttpClient")
+    @ConditionalOnClass(name = "org.springframework.web.client.RestTemplate")
+    public EurekaSubscribableHttpClient restTemplateEurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
+        String appName = environment.getProperty(PROPERTY_NAME);
+        return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new EurekaSubscribeRestTemplateTransportClientFactory());
+    }
+
+    @Bean("eurekaSubscribableHttpClient")
+    @ConditionalOnMissingClass("org.springframework.web.client.RestTemplate")
+    public EurekaSubscribableHttpClient jerseyEurekaSubscribableHttpClient(@Qualifier("clusterResolver") ClusterResolver<EurekaEndpoint> clusterResolver, Environment environment) {
+        String appName = environment.getProperty(PROPERTY_NAME);
         return new RetryableEurekaSubscribeHttpClient(appName + "-subscribe-client", eurekaClientConfig.getTransportConfig(), clusterResolver, new EurekaSubscribeTransportClientFactory(eurekaClientConfig));
     }
 
