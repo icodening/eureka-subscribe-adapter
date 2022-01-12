@@ -65,11 +65,36 @@ mvn clean install
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ````
-* 3.在bootstrap.yml中加入eureka.server.subscribe.enabled=true的配置项
+* 3.在bootstrap.yml中加入ribbon.eureka.subscribe.enabled=true的配置项
 ```` yaml
 ribbon:
   eureka:
     subscribe:
       enabled: true #不配置时默认为值为true。当不想使用实时感知功能时可以配置为false
+````
+* 4.正常启动应用即可  
+
+### Spring Cloud Loadbalancer
+PS:  Spring Cloud Loadbalancer 从SpringCloud 2020.0开始成为默认的负载均衡器!!!
+* 1.先安装代码到本地仓库(已安装则跳过)
+````shell script
+mvn clean install
+````
+* 2.在应用的POM中引入以下依赖
+````shell script
+<dependency>
+    <groupId>cn.icodening.eureka</groupId>
+    <artifactId>spring-cloud-starter-eureka-subscribe-loadbalancer</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+````
+* 3.在bootstrap.yml中加入spring.cloud.loadbalancer.eureka.subscribe.enabled=true的配置项
+```` yaml
+spring:
+  cloud:
+    loadbalancer:
+        eureka:
+          subscribe:
+            enabled: true #不配置时默认为值为true。当不想使用实时感知功能时可以配置为false
 ````
 * 4.正常启动应用即可
