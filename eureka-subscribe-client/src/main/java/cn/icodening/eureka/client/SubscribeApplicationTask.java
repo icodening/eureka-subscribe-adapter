@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * @author icodening
  * @date 2022.01.09
  */
-public abstract class SubscribeApplicationTask extends TimerTask {
+public class SubscribeApplicationTask extends TimerTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubscribeApplicationTask.class);
 
@@ -22,6 +24,10 @@ public abstract class SubscribeApplicationTask extends TimerTask {
     private final EurekaSubscribableHttpClient eurekaSubscribableHttpClient;
 
     private final ApplicationHashGenerator applicationHashGenerator;
+
+    private final ScheduledExecutorService subscribeApplicationExecutor;
+
+    private volatile boolean stop = false;
 
     public SubscribeApplicationTask(String appName,
                                     EurekaSubscribableHttpClient eurekaSubscribableHttpClient) {
@@ -34,6 +40,11 @@ public abstract class SubscribeApplicationTask extends TimerTask {
         this.appName = appName;
         this.eurekaSubscribableHttpClient = eurekaSubscribableHttpClient;
         this.applicationHashGenerator = applicationHashGenerator;
+        this.subscribeApplicationExecutor = new ScheduledThreadPoolExecutor(1, r -> {
+            Thread thread = new Thread(r);
+            thread.setName(appName + "-subscribe-thread");
+            return thread;
+        });
     }
 
     public String getAppName() {
@@ -51,7 +62,6 @@ public abstract class SubscribeApplicationTask extends TimerTask {
             Application application = applicationEurekaHttpResponse.getEntity();
             onSuccess(application);
         } catch (Throwable exception) {
-            //ignore exception
             onException(exception);
         } finally {
             onComplete();
@@ -59,8 +69,18 @@ public abstract class SubscribeApplicationTask extends TimerTask {
 
     }
 
-    protected void onComplete() {
+    public synchronized void start(){
+        subscribeApplicationExecutor.execute(this);
+    }
 
+    public void stop() {
+        stop = true;
+    }
+
+    protected void onComplete() {
+        if (!stop) {
+            subscribeApplicationExecutor.execute(this);
+        }
     }
 
     protected void onException(Throwable exception) {
