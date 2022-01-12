@@ -1,7 +1,7 @@
 package cn.icodening.eureka.loadbalancer;
 
 import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
-import cn.icodening.eureka.client.KeepSubscribeApplicationTask;
+import cn.icodening.eureka.client.SubscribeApplicationTask;
 import cn.icodening.eureka.common.ApplicationAware;
 import cn.icodening.eureka.common.ApplicationHashGenerator;
 import com.netflix.discovery.EurekaClientConfig;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,20 +27,17 @@ public class ServiceInstanceListAwareUpdater {
 
     private final String applicationName;
     private final EurekaSubscribableHttpClient eurekaSubscribableHttpClient;
-    private final ScheduledExecutorService executor;
 
     private EurekaClientConfig eurekaClientConfig;
     private ApplicationHashGenerator applicationHashGenerator;
     private List<ApplicationAware> applicationAwareList;
 
-    private volatile KeepSubscribeApplicationTask keepSubscribeApplicationTask;
+    private volatile SubscribeApplicationTask subscribeApplicationTask;
 
     public ServiceInstanceListAwareUpdater(String applicationName,
-                                           EurekaSubscribableHttpClient eurekaSubscribableHttpClient,
-                                           ScheduledExecutorService executor) {
+                                           EurekaSubscribableHttpClient eurekaSubscribableHttpClient) {
         this.applicationName = applicationName;
         this.eurekaSubscribableHttpClient = eurekaSubscribableHttpClient;
-        this.executor = executor;
     }
 
     public void setApplicationAwareList(List<ApplicationAware> applicationAwareList) {
@@ -59,7 +55,7 @@ public class ServiceInstanceListAwareUpdater {
     public synchronized void start() {
         if (isRunning.compareAndSet(false, true)) {
             long fetchIntervalMillis = Optional.ofNullable(eurekaClientConfig).map(EurekaClientConfig::getRegistryFetchIntervalSeconds).map(x -> TimeUnit.MILLISECONDS.convert(x, TimeUnit.SECONDS)).orElse(30 * 1000L);
-            this.keepSubscribeApplicationTask = new KeepSubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient, applicationHashGenerator, executor) {
+            this.subscribeApplicationTask = new SubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient, applicationHashGenerator) {
                 @Override
                 protected void onApplicationChange(Application application) {
                     for (ApplicationAware applicationAware : applicationAwareList) {
@@ -80,13 +76,13 @@ public class ServiceInstanceListAwareUpdater {
                     }
                 }
             };
-            executor.execute(keepSubscribeApplicationTask);
+            subscribeApplicationTask.start();
         }
     }
 
     public synchronized void stop() {
         if (isRunning.compareAndSet(true, false)) {
-            keepSubscribeApplicationTask.stop();
+            subscribeApplicationTask.stop();
         }
     }
 

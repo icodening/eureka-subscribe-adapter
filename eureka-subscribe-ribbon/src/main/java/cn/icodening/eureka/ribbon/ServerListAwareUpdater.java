@@ -1,7 +1,7 @@
 package cn.icodening.eureka.ribbon;
 
 import cn.icodening.eureka.client.EurekaSubscribableHttpClient;
-import cn.icodening.eureka.client.KeepSubscribeApplicationTask;
+import cn.icodening.eureka.client.SubscribeApplicationTask;
 import cn.icodening.eureka.common.ApplicationAware;
 import cn.icodening.eureka.common.ApplicationHashGenerator;
 import com.netflix.discovery.EurekaClientConfig;
@@ -39,7 +39,7 @@ public class ServerListAwareUpdater implements ServerListUpdater {
     private ApplicationHashGenerator applicationHashGenerator;
     private List<ApplicationAware> applicationAwareList;
 
-    private volatile KeepSubscribeApplicationTask keepSubscribeApplicationTask;
+    private volatile SubscribeApplicationTask subscribeApplicationTask;
 
     private volatile long lastUpdated = System.currentTimeMillis();
 
@@ -67,7 +67,7 @@ public class ServerListAwareUpdater implements ServerListUpdater {
     public synchronized void start(UpdateAction updateAction) {
         if (isActive.compareAndSet(false, true)) {
             long fetchIntervalMillis = Optional.ofNullable(eurekaClientConfig).map(EurekaClientConfig::getRegistryFetchIntervalSeconds).map(x -> TimeUnit.MILLISECONDS.convert(x, TimeUnit.SECONDS)).orElse(30 * 1000L);
-            this.keepSubscribeApplicationTask = new KeepSubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient, applicationHashGenerator, executor) {
+            this.subscribeApplicationTask = new SubscribeApplicationTask(applicationName, eurekaSubscribableHttpClient, applicationHashGenerator) {
                 @Override
                 protected void onApplicationChange(Application application) {
                     for (ApplicationAware applicationAware : applicationAwareList) {
@@ -90,14 +90,14 @@ public class ServerListAwareUpdater implements ServerListUpdater {
                     }
                 }
             };
-            executor.execute(keepSubscribeApplicationTask);
+            subscribeApplicationTask.start();
         }
     }
 
     @Override
     public synchronized void stop() {
         if (isActive.compareAndSet(true, false)) {
-            keepSubscribeApplicationTask.stop();
+            subscribeApplicationTask.stop();
         }
     }
 
