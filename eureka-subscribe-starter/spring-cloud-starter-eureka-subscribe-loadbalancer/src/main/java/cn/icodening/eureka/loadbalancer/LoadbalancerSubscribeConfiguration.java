@@ -9,6 +9,7 @@ import com.netflix.discovery.shared.resolver.DefaultEndpoint;
 import com.netflix.discovery.shared.resolver.EurekaEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
 import org.springframework.context.annotation.Bean;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * @date 2022.01.12
  */
 @LoadBalancerClients(defaultConfiguration = SubscribeDefaultLoadbalancerConfiguration.class)
+@ConditionalOnProperty(prefix = "spring.cloud.loadbalancer.eureka.subscribe", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class LoadbalancerSubscribeConfiguration {
 
     @Autowired(required = false)

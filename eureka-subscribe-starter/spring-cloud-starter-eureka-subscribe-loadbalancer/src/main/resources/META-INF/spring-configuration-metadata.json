@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "spring.cloud.loadbalancer.eureka.subscribe.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Flag to enable the spring cloud loadbalancer subscription eureka support. Default true.",
+      "defaultValue": true
+    }
+  ]
+}
