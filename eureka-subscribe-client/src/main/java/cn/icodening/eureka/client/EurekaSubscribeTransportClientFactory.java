@@ -5,8 +5,8 @@ import com.netflix.discovery.provider.DiscoveryJerseyProvider;
 import com.netflix.discovery.shared.resolver.EurekaEndpoint;
 import com.netflix.discovery.shared.transport.EurekaHttpClient;
 import com.netflix.discovery.shared.transport.TransportClientFactory;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -27,9 +27,9 @@ public class EurekaSubscribeTransportClientFactory implements TransportClientFac
     public EurekaHttpClient newClient(EurekaEndpoint serviceUrl) {
         DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(EurekaCodec.DEFAULT, EurekaCodec.DEFAULT);
         Map<String, String> additionalHeaders = new Hashtable<>();
-        DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
-        defaultClientConfig.getSingletons().add(discoveryJerseyProvider);
-        ApacheHttpClient4 apacheHttpClient4 = ApacheHttpClient4.create(defaultClientConfig);
+        DefaultApacheHttpClient4Config defaultApacheHttpClient4Config = new DefaultApacheHttpClient4Config();
+        defaultApacheHttpClient4Config.getSingletons().add(discoveryJerseyProvider);
+        ApacheHttpClient4 apacheHttpClient4 = ApacheHttpClient4.create(defaultApacheHttpClient4Config);
         return new JerseyApplicationSubscribeClient(apacheHttpClient4, serviceUrl.getServiceUrl(), additionalHeaders, eurekaClientConfig);
     }
 

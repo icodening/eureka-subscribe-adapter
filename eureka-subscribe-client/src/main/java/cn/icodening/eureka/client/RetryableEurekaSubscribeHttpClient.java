@@ -9,8 +9,8 @@ import com.netflix.discovery.shared.transport.*;
 import com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient;
 import com.netflix.discovery.shared.transport.decorator.ServerStatusEvaluator;
 import com.netflix.discovery.shared.transport.decorator.ServerStatusEvaluators;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
 /**
  * @author icodening
@@ -23,10 +23,10 @@ public class RetryableEurekaSubscribeHttpClient extends RetryableEurekaHttpClien
     private static final TransportClientFactory subscribeClientFactory = new TransportClientFactory() {
         @Override
         public EurekaHttpClient newClient(EurekaEndpoint serviceUrl) {
-            DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
             DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(EurekaCodec.DEFAULT, EurekaCodec.DEFAULT);
-            defaultClientConfig.getSingletons().add(discoveryJerseyProvider);
-            ApacheHttpClient4 apacheHttpClient4 = ApacheHttpClient4.create(defaultClientConfig);
+            DefaultApacheHttpClient4Config defaultApacheHttpClient4Config = new DefaultApacheHttpClient4Config();
+            defaultApacheHttpClient4Config.getSingletons().add(discoveryJerseyProvider);
+            ApacheHttpClient4 apacheHttpClient4 = ApacheHttpClient4.create(defaultApacheHttpClient4Config);
             return new JerseyApplicationSubscribeClient(apacheHttpClient4, serviceUrl.getServiceUrl());
         }
 
