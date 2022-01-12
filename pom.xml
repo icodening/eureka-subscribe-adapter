@@ -15,6 +15,7 @@
         <module>eureka-subscribe-client</module>
         <module>eureka-subscribe-ribbon</module>
         <module>eureka-subscribe-starter</module>
+        <module>eureka-subscribe-spring-cloud-loadbalancer</module>
     </modules>
 
     <properties>

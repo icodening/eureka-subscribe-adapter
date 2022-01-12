@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>spring-cloud-starter-eureka-subscribe-ribbon</module>
+        <module>spring-cloud-starter-eureka-subscribe-loadbalancer</module>
     </modules>
 
 
