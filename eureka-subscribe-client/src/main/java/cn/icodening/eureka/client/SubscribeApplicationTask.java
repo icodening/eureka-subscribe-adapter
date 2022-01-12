@@ -50,7 +50,7 @@ public abstract class SubscribeApplicationTask extends TimerTask {
             EurekaHttpResponse<Application> applicationEurekaHttpResponse = eurekaSubscribableHttpClient.subscribeApplication(appName);
             Application application = applicationEurekaHttpResponse.getEntity();
             onSuccess(application);
-        } catch (Exception exception) {
+        } catch (Throwable exception) {
             //ignore exception
             onException(exception);
         } finally {
@@ -63,7 +63,7 @@ public abstract class SubscribeApplicationTask extends TimerTask {
 
     }
 
-    protected void onException(Exception exception) {
+    protected void onException(Throwable exception) {
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("subscribe servers error!!!", exception);
         }

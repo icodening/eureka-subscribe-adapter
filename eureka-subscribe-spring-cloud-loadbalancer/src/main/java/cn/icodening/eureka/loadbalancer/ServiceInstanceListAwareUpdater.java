@@ -71,7 +71,7 @@ public class ServiceInstanceListAwareUpdater {
                 }
 
                 @Override
-                protected void onException(Exception exception) {
+                protected void onException(Throwable exception) {
                     super.onException(exception);
                     try {
                         Thread.sleep(fetchIntervalMillis);
