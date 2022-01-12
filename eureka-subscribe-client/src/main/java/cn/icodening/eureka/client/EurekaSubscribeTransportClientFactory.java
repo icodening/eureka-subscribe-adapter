@@ -25,8 +25,7 @@ public class EurekaSubscribeTransportClientFactory implements TransportClientFac
 
     @Override
     public EurekaHttpClient newClient(EurekaEndpoint serviceUrl) {
-        EurekaCodec codec = new EurekaCodec();
-        DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(codec, codec);
+        DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(EurekaCodec.DEFAULT, EurekaCodec.DEFAULT);
         Map<String, String> additionalHeaders = new Hashtable<>();
         DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
         defaultClientConfig.getSingletons().add(discoveryJerseyProvider);

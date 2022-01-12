@@ -24,8 +24,7 @@ public class RetryableEurekaSubscribeHttpClient extends RetryableEurekaHttpClien
         @Override
         public EurekaHttpClient newClient(EurekaEndpoint serviceUrl) {
             DefaultClientConfig defaultClientConfig = new DefaultClientConfig();
-            EurekaCodec codec = new EurekaCodec();
-            DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(codec, codec);
+            DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(EurekaCodec.DEFAULT, EurekaCodec.DEFAULT);
             defaultClientConfig.getSingletons().add(discoveryJerseyProvider);
             ApacheHttpClient4 apacheHttpClient4 = ApacheHttpClient4.create(defaultClientConfig);
             return new JerseyApplicationSubscribeClient(apacheHttpClient4, serviceUrl.getServiceUrl());

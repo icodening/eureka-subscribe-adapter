@@ -18,6 +18,8 @@ import java.io.OutputStream;
 public class EurekaCodec implements EncoderWrapper,
         DecoderWrapper {
 
+    public static final EurekaCodec DEFAULT = new EurekaCodec();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
